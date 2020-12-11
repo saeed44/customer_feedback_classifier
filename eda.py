@@ -48,6 +48,18 @@ def dist_plot(df_final):
     plt.savefig('./results/class_distribution.png', bbox_inches="tight")
 
     
+def word_count_plot(df_final):
+    
+    fig, ax = plt.subplots(1,1,figsize=(10,8))
+    ax.set_xlabel("Word Count")
+    ax.set_ylabel("Density")
+    sns.kdeplot(df_final[df_final["Compliment"]==1]["word_count"],  color="tomato", ax=ax, label="Compliment" )
+    sns.kdeplot(df_final[df_final["Complaint"]==1]["word_count"],  color="springgreen", ax=ax, label="Complaint" )
+    sns.kdeplot(df_final[df_final["Suggestion"]==1]["word_count"],  color="cyan", ax=ax, label="Suggestion" )
+    plt.legend()
+    plt.savefig('./results/word_count_distribution.png')
+    
+
 
 
 if __name__=="__main__":
@@ -56,7 +68,9 @@ if __name__=="__main__":
     df_retail = pd.read_csv("./data/Retail.csv")
 
     data = p.preprocess(df_bank, df_fb, df_retail)
-    data.merge_clean()
+    data.merge()
+    data.clean()
+    data.add_count()
 
-    dist_plot(data.df_final)
+    word_count_plot(data.df_final)
     plt.show()

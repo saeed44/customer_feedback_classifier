@@ -1,5 +1,9 @@
 import pandas as pd 
 import numpy as np
+from nltk.corpus import stopwords
+import re
+from collections import Counter
+
 
 df_bank = pd.read_csv("./data/Banking.csv")
 df_fb = pd.read_csv("./data/FB.csv")
@@ -19,7 +23,7 @@ class preprocess:
         self.df_retail = df_retail
         self.df_final = None
 
-    def merge_clean(self):
+    def merge(self):
         '''
         merge and clean the dataframes
         '''
@@ -50,10 +54,42 @@ class preprocess:
         
         self.df_final = self.df_final.sample(frac=1, random_state=40).reset_index(drop=True)
         
+        return self.df_final
 
+    def clean(self):
+        '''
+        removes bad charachters from the text
+        '''
+
+        assert self.df_final is not None, "final dataframe is not built yet, run merge() first"
+
+        replace_by_space = re.compile('[\n/(){}\[\]\|@,;]')
+        STOPWORDS = set(stopwords.words('english'))
+        BAD_SYMBOLS_RE = re.compile('[^0-9a-z !]')
+
+        def clean(s):
+            s = s.lower()
+            s = replace_by_space.sub(' ',s)
+            s = BAD_SYMBOLS_RE.sub('', s)
+            s = ' '.join(word for word in s.split() if word not in STOPWORDS) # delete stopwors from text
+            return s
+
+
+        self.df_final["Text"] = self.df_final["Text"].apply(clean)
+
+    def add_count(self):
+        '''
+        add the number of tokens to the final dataframe
+        '''
+        self.df_final["word_count"] = self.df_final["Text"].apply(lambda s: sum(Counter(s.split()).values()))
+        return self.df_final
 
 
 
 if __name__ == "__main__":
-    print(preprocess(df_bank, df_fb, df_retail).merge_clean())
+    data = preprocess(df_bank, df_fb, df_retail)
+    data.merge()
+    data.clean()
+    data.add_count()
+    print(data.df_final)
 
