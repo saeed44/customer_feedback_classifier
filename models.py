@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.compose import ColumnTransformer
@@ -25,6 +26,7 @@ class Model:
     def __init__(self, df_final):
         
         self.df_final = df_final
+        self.columns_trans = None
 
     
     def split(self):
@@ -35,7 +37,7 @@ class Model:
         y = self.df_final[['Compliment','Complaint','Suggestion']]
         X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state = 62, stratify=y['Complaint'])
 
-        col_trans = ColumnTransformer(
+        self.columns_trans = ColumnTransformer(
             [('tfidf', TfidfVectorizer(stop_words='english', ngram_range=(1,1)), 'Text'),
             ('neg', StandardScaler(),make_column_selector(pattern='neg',dtype_include=np.number)),
             ('neu', StandardScaler(),make_column_selector(pattern='neu',dtype_include=np.number)),
@@ -47,8 +49,8 @@ class Model:
             ('word_count', StandardScaler(),make_column_selector(pattern='word_count',dtype_include=np.number))] ,
             remainder='drop')
 
-        X_train_f = col_trans.fit_transform(X_train)
-        X_test_f = col_trans.transform(X_test)      
+        X_train_f = self.columns_trans.fit_transform(X_train)
+        X_test_f = self.columns_trans.transform(X_test)  
     
         return X_train_f, X_test_f, y_train, y_test
 
@@ -70,8 +72,15 @@ class Model:
         Test the model, print metrics and plot and save confusion matrix
         '''
 
+
         X_train, X_test, y_train, y_test = self.split()
 
+        if not os.path.exists('./results/model_log_reg.joblib'):
+            print("Model not trained yet, training first...\n")
+            self.train()
+            print("Training finished.")
+
+        print("Load and test the model:")    
         log_reg = load('./results/model_log_reg.joblib')
 
         y_pred = log_reg.predict(X_test)
@@ -94,6 +103,41 @@ class Model:
 
         plt.savefig(f'./results/confusion_matrix.png')
         plt.show()
+    
+    def imp_features(self, model, categ="Compliment"):
+            self.split()
+            category = {"Compliment":0, "Complaint":1, "Suggestion":2 }
+            
+            tfidf_length = len(self.columns_trans.named_transformers_["tfidf"].get_feature_names())
+            
+            important_tokens = pd.DataFrame(
+            data = model.estimators_[category[categ]].coef_[0][:tfidf_length],
+            index=self.columns_trans.named_transformers_["tfidf"].get_feature_names(),
+            columns=['coefficient']  ).sort_values(by="coefficient", ascending=False)  
+            return important_tokens 
+
+    def feature_importance(self):
+
+        if not os.path.exists('./results/model_log_reg.joblib'):
+            print("Model not trained yet, training first...\n")
+            self.train()
+            print("Training finished.")
+        
+        log_reg = load('./results/model_log_reg.joblib')
+
+        for categ in ["Compliment","Complaint","Suggestion"]:
+            fig, ax = plt.subplots(1,1,figsize=(10,5))
+            # sns.set(font_scale = 1.5)
+
+            sns.barplot(x=self.imp_features(log_reg, categ=categ)['coefficient'][:20].values, 
+                        y=self.imp_features(log_reg, categ=categ)['coefficient'][:20].index.values, 
+                        ax=ax, color="cornflowerblue")
+            ax.text(.9,.5,categ, transform=ax.transAxes )
+            ax.set_xlabel("Coefficient")
+            plt.savefig(f'./results/important_featurs_{categ}.png')
+        plt.show()
+        
+
 
 
 
@@ -107,4 +151,4 @@ if __name__ == "__main__":
     df_final = data.df_final
     tr = Model(df_final)
 
-    tr.test()
+    tr.feature_importance()
