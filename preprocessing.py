@@ -3,6 +3,8 @@ import numpy as np
 from nltk.corpus import stopwords
 import re
 from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 
 df_bank = pd.read_csv("./data/Banking.csv")
@@ -85,11 +87,49 @@ class preprocess:
         return self.df_final
 
 
+    def add_sentiments(self):
+        '''
+        Add sentiment scores to the dataframe
+        '''
+        si = SentimentIntensityAnalyzer()
+        self.df_final["Sentiments"] = self.df_final["Text"].apply(lambda s: si.polarity_scores(s))
+        self.df_final = pd.concat([self.df_final.drop(['Sentiments'], axis=1), self.df_final['Sentiments'].apply(pd.Series)], axis=1)    
+        
+        return self.df_final
+
+
+    def top_n_words(self, corpus):
+        '''
+        The input is a corpus of words
+        output is a pandas Series of word counts, descending 
+        '''
+        vec = CountVectorizer().fit(corpus)
+        bag_of_words = vec.transform(corpus)
+        sum_words = bag_of_words.sum(axis=0) 
+        words_freq = [(word, sum_words[0, idx]) for word, idx in vec.vocabulary_.items()]
+        words_freq =sorted(words_freq, key = lambda x: x[1], reverse=True)
+        
+        return pd.Series({word:freq for word,freq in words_freq})
+        
+    def preprocess_apply(self):
+        '''
+        A method to do all the preprocessing, apply before training
+        '''
+        self.merge()
+        self.clean()
+        self.add_count()
+        self.add_sentiments()
+
+
+
 
 if __name__ == "__main__":
     data = preprocess(df_bank, df_fb, df_retail)
-    data.merge()
-    data.clean()
-    data.add_count()
+    # data.merge()
+    # data.clean()
+    # data.add_count()
+    # data.add_sentiments()
+    # print(data.df_final)
+    # data.top_n_words(data.df_final[(data.df_final["Complaint"]==1)]["Text"])
+    data.preprocess_apply()
     print(data.df_final)
-

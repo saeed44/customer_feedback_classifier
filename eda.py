@@ -58,7 +58,23 @@ def word_count_plot(df_final):
     sns.kdeplot(df_final[df_final["Suggestion"]==1]["word_count"],  color="cyan", ax=ax, label="Suggestion" )
     plt.legend()
     plt.savefig('./results/word_count_distribution.png')
-    
+
+       
+       
+def plot_top_n_words(series, category, n=None):
+    '''
+    plot top n words in a given category
+    '''
+    fig, ax = plt.subplots(1,1,figsize=(18,5))
+    sns.set(font_scale = 1.5)
+    if n:
+        pass
+    else:
+        n=15
+    sns.barplot(x=series.iloc[:n].values, y=series.iloc[:n].index.values, ax=ax)
+    ax.text(.9, .5, category, transform=ax.transAxes, fontsize=17 )
+    ax.set_xlabel("Word Count")
+    plt.savefig(f'./results/top_n_words_{category}.png')
 
 
 
@@ -71,6 +87,15 @@ if __name__=="__main__":
     data.merge()
     data.clean()
     data.add_count()
+    df_final = data.df_final 
+    complaint_count = data.top_n_words(df_final[(df_final["Complaint"]==1)]["Text"])
+    plot_top_n_words(complaint_count, "Complaint")
 
-    word_count_plot(data.df_final)
+    compliment_count = data.top_n_words(df_final[(df_final["Compliment"]==1)]["Text"])
+    plot_top_n_words(compliment_count, "Compliment")
+
+    suggestion_count = data.top_n_words(df_final[(df_final["Suggestion"]==1)]["Text"])
+    plot_top_n_words(suggestion_count, "Suggestion")
+    # word_count_plot(data.df_final)
+
     plt.show()
