@@ -76,18 +76,25 @@ def plot_top_n_words(series, category, n=None):
     ax.set_xlabel("Word Count")
     plt.savefig(f'./results/top_n_words_{category}.png')
 
-
-
-if __name__=="__main__":
-    df_bank = pd.read_csv("./data/Banking.csv")
-    df_fb = pd.read_csv("./data/FB.csv")
-    df_retail = pd.read_csv("./data/Retail.csv")
-
+def run_eda(df_bank, df_fb, df_retail):
+    '''
+    a function to run the components of eda
+    '''
     data = p.preprocess(df_bank, df_fb, df_retail)
     data.merge()
     data.clean()
     data.add_count()
     df_final = data.df_final 
+    # plot the count of each category
+    count_plot(df_final)
+
+    # plot the distribution of the categories
+    dist_plot(df_final)
+
+    # plot the distribution of the word counts 
+    word_count_plot(df_final)
+
+    # plot the top n words for each category
     complaint_count = data.top_n_words(df_final[(df_final["Complaint"]==1)]["Text"])
     plot_top_n_words(complaint_count, "Complaint")
 
@@ -96,6 +103,16 @@ if __name__=="__main__":
 
     suggestion_count = data.top_n_words(df_final[(df_final["Suggestion"]==1)]["Text"])
     plot_top_n_words(suggestion_count, "Suggestion")
-    # word_count_plot(data.df_final)
 
     plt.show()
+
+
+if __name__=="__main__":
+    df_bank = pd.read_csv("./data/Banking.csv")
+    df_fb = pd.read_csv("./data/FB.csv")
+    df_retail = pd.read_csv("./data/Retail.csv")
+
+
+    # word_count_plot(data.df_final)
+
+    

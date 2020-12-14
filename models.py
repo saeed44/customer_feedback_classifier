@@ -105,16 +105,19 @@ class Model:
         plt.show()
     
     def imp_features(self, model, categ="Compliment"):
-            self.split()
-            category = {"Compliment":0, "Complaint":1, "Suggestion":2 }
-            
-            tfidf_length = len(self.columns_trans.named_transformers_["tfidf"].get_feature_names())
-            
-            important_tokens = pd.DataFrame(
-            data = model.estimators_[category[categ]].coef_[0][:tfidf_length],
-            index=self.columns_trans.named_transformers_["tfidf"].get_feature_names(),
-            columns=['coefficient']  ).sort_values(by="coefficient", ascending=False)  
-            return important_tokens 
+        '''
+        Returns a data frame of features coefficients for "categ"
+        '''
+        self.split()
+        category = {"Compliment":0, "Complaint":1, "Suggestion":2 }
+        
+        tfidf_length = len(self.columns_trans.named_transformers_["tfidf"].get_feature_names())
+        
+        important_tokens = pd.DataFrame(
+        data = model.estimators_[category[categ]].coef_[0][:tfidf_length],
+        index=self.columns_trans.named_transformers_["tfidf"].get_feature_names(),
+        columns=['coefficient']  ).sort_values(by="coefficient", ascending=False)  
+        return important_tokens 
 
     def feature_importance(self):
 
@@ -137,9 +140,6 @@ class Model:
             plt.savefig(f'./results/important_featurs_{categ}.png')
         plt.show()
         
-
-
-
 
 if __name__ == "__main__":
     df_bank = pd.read_csv("./data/Banking.csv")
