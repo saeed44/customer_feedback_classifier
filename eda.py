@@ -85,6 +85,7 @@ def run_eda(df_bank, df_fb, df_retail):
     data.clean()
     data.add_count()
     df_final = data.df_final 
+
     # plot the count of each category
     count_plot(df_final)
 

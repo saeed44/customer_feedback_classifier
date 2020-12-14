@@ -2,8 +2,10 @@ import pandas as pd
 import os
 import sys
 import eda
+from models import Model
+import preprocessing as p
 
-model = sys.argv[1]
+process = sys.argv[1]
 path1 = sys.argv[2]
 path2 = sys.argv[3]
 path3 = sys.argv[4]
@@ -18,15 +20,28 @@ def read_files():
     else:
         raise FileExistsError("File(s) does not exist.")
 
-def run(model):
-
+def run(process):
+    '''
+    This runs the given process
+    '''
     df_1, df_2, df_3 = read_files()
+    
+    data = p.preprocess(df_1, df_2, df_3)
+    data.merge()
+    data.clean()
+    data.add_count()
+    data.add_sentiments()
+    df_final = data.df_final 
 
-    if model=="eda":
+    if process=="eda":
         eda.run_eda(df_1, df_2, df_3)
+    elif process=="train":
+        m = Model(df_final)
+        m.train()
+
 
 
 if __name__=="__main__":
 
-    print(model)
-    run(model)
+    print(process)
+    run(process)
