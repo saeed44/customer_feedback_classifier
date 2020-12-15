@@ -38,6 +38,9 @@ def run(process):
     elif process=="train":
         m = Model(df_final)
         m.train()
+    elif process=="test":
+        m = Model(df_final)
+        m.test()   
 
 
 
