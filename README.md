@@ -14,8 +14,8 @@ The desired script is run by:
 Challenge
 ======
 
-One challenging aspect of this data was that the data set was kind of small, ~1800 samples. Here I have implemented the logistic regression model and the performance of the model is good, recall~88%. 
+One challenging aspect of this data was that the data set was kind of small, `~1800` samples. Here I have implemented the logistic regression model and the performance of the model is good, `recall~88%`. 
 
-To improve the predictions, I used a pre-trained deep learning model (BERT) which improved the recall by ~7%. 
+To improve the predictions, I used a pre-trained deep learning model (BERT) which improved the recall by `~7%`. 
 
 Results of the model are stored in the "results" folder. 
