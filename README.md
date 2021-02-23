@@ -11,8 +11,8 @@ The desired script is run by:
 
 "process" takes the following strings: "eda", "train", "test". The arguments "path"s refer to the input data frames that correspond to three sectors of businesses that the feedback messages are coming from.
 
-Challenge
-======
+## Challenge
+
 
 One challenging aspect of this data was that the data set was kind of small, `~1800` samples. Here I have implemented the logistic regression model and the performance of the model is good, `recall~88%`. 
 
